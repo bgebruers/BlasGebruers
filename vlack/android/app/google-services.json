@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "338903811682",
+    "project_id": "vlack-a0e92",
+    "storage_bucket": "vlack-a0e92.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:338903811682:android:42775f62576e9146c9333b",
+        "android_client_info": {
+          "package_name": "com.example.blackner"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCLsBRMzRuasrARowrSecUU4AFr9yopLAY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:338903811682:android:fad69dc6ed349e56c9333b",
+        "android_client_info": {
+          "package_name": "com.example.vlack"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCLsBRMzRuasrARowrSecUU4AFr9yopLAY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
