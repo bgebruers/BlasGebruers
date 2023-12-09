@@ -8,3 +8,6 @@ En este repositorio podemos encontrar dos carpetas de archivos:
 
 
 -Api: esta carpeta contiene el desarrollo de una API RESTful utilizando NodeJS y la base de datos sql MySql.
+
+
+-App: esta es una aplicacion movil desarrollada con ReactNative para un proyecto final, consume la api antes mencionada.
