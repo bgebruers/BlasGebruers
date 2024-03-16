@@ -1,0 +1,10 @@
+utility\Path$Template.class
+utility\Path.class
+com\mycompany\porkycakes\porkyDAO.class
+com\mycompany\porkycakes\porkyMain.class
+utility\Sql2oDAO.class
+spark\templates\velocity\VelocityTemplateEngine.class
+com\mycompany\porkycakes\porkyControlador.class
+com\mycompany\porkycakes\Producto.class
+utility\Path$Web.class
+.netbeans_automatic_build

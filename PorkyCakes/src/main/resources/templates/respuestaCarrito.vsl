@@ -1,0 +1,29 @@
+<style>
+    .vacio{
+        font-size: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content:center;
+        aling-item: center;
+        padding-top: 100px;
+        padding-left: 500px;
+    }
+    .imagen{
+        width: 300px;
+        heigth: 300px;
+    }
+</style>
+
+
+
+<div class="vacio">
+    <img class="imagen" src="/imagenes/carro.jpg" alt="carrito llorando">
+    <p>Producto añadido a carrito!!!!</p>
+    <a href="/porkycakes"> 
+        Ir a Pagina Principal
+    </a>
+    <br>
+    <a href="/api/producto/verCarrito"> 
+        Ver mi carrito
+    </a>
+</div>

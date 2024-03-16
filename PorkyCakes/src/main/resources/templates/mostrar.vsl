@@ -1,0 +1,53 @@
+<style>
+    section {
+        width: 100%;
+        padding: 90px;
+        padding-top: 70px;
+    }
+
+    .mostrar-container {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+    }
+
+    .detalles,
+    .img-producto {
+        flex: 1;
+        padding: 20px;
+        box-sizing: border-box;
+        width: auto;
+    }
+
+    .img-producto img {
+        max-width: 100%;
+        height: auto;
+        width: 100%;
+    }
+
+    .btn {
+        width: 180px;
+    }
+</style>
+
+
+<section id="info-producto">
+    <div class="mostrar-container">
+        <div class="img-producto">
+            <img src="/imagenes/$p.getImagen()" alt="">    
+        </div>
+        <div class="detalles">
+            <p class="name"><b>$p.getNombre()</b></p>
+            <p>$p.getDescripcion()</p>
+            <p class="price">Precio: $p.getPrecio()</p>
+            <p class="price">Calificacion: $p.getCalificacion()</p>
+            <p>
+                Cantidad a Comprar: <input type="number" class="cant-compra" name="cantidad" id="cantidad">
+            </p>
+            <button type="button" class="btn btn-success">Comprar</button>
+            <a href="/api/producto/agregarCarrito?prod=$p.getIdProducto()"> 
+                <button type="button" class="btn btn-primary">Añadir a carrito</button>
+            </a>
+        </div>
+    </div>
+</section>

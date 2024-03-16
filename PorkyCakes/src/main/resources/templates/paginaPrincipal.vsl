@@ -1,0 +1,211 @@
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        margin: 0;
+    }
+
+    header {
+        position: fixed;
+        width: 100%;
+    }
+
+    header .container {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 10px;
+        background-color: rgb(245, 245, 245);
+    }
+
+    header a {
+        padding: 5px 12px;
+        text-decoration: none;
+        font-weight: bold;
+        color: black;
+    }
+
+
+    header .search {
+        width: 400px;
+        background-color: antiquewhite;
+        border-radius: 5px;
+        height: 35px;
+
+    }
+
+    .logo {
+        color: rgb(248, 163, 163);
+        width: 150px;
+    }
+
+    .logo:hover {
+        color: rgb(153, 106, 114);
+    }
+
+    header .bi {
+        margin: 5px 10px;
+        margin-bottom: 5px
+    }
+
+    header .container-icons {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: flex-start;
+    }
+
+    .main {
+        padding: 150px 12px;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    #mostrar-productos .card-body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #mostrar-productos p {
+        font-size: 20px;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+    }
+
+    .modal-contenido {
+        background-color: #fff;
+        margin: 10% auto;
+        padding: 20px;
+        width: 80%;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        position: relative;
+    }
+
+
+    .cerrar-modal {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        cursor: pointer;
+    }
+
+
+    .bt {
+        background-color: rgba(240, 248, 255, 0);
+        border: none;
+    }
+
+    .enviar {
+        background-color: rgb(77, 150, 4);
+        border: none;
+        border-radius: 5px;
+        color: white;
+    }
+
+    #categoria {
+        width: 100px;
+        border-radius: 2px;
+    }
+</style>
+
+<header>
+    <div class="container">
+           
+        <a class="logo" href="/porkycakes">PORKY CAKES</a>
+        <a href="#">Productos</a>
+        <a href="#">Contacto</a>
+        <form action= "/api/producto/buscarxNombre" method="get">
+            <input class="search" type="text" id="prod" name="prod" placeholder="Buscar producto" value="$!{busqueda}"/>
+              <!--icono de buscar-->
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+            </svg>
+        </form>
+        <!--icono de filtro-->
+        <button class="bt">
+            <span class="icono" onclick="abrirModal()"> 
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-filter" viewBox="0 0 16 16">
+                    <path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/>
+                </svg>
+            </span>
+            
+            <div id="miVentanaModal" class="modal">
+                <div class="modal-contenido">
+                    <span class="cerrar-modal" onclick="cerrarModal()">&times;</span>
+                    
+                    <form action= "/api/producto/buscarxCategoria" method="get"> 
+                        <label >Buscar por Categorias:</label>
+                        <br/>
+                        <select id="categoria" name="categoria">
+                            #foreach ($c in $categorias)
+                                <option value=$c.name()>$c.name()</option>
+                            #end
+                        </select>
+                        <br/>    
+                        <br/> 
+                        <input class="enviar" type="submit" value="Aplicar filtro"/>
+                    </form>
+                    <hr/>
+                    <form>
+                        <form action= "/api/producto/buscarxCantidad" method="get"> 
+                            <label >Buscar por Cantidad:</label>
+                            <br/>
+                            <input type="number" id="stock" name="stock" value="$!{stock}" placeholder="Ingrese la cantiadad"/><br/><br/>
+                            <input class="enviar" type="submit" value="Aplicar filtro"/>                                   
+                        </form> 
+
+                        <hr/>
+                        <form action= "/api/producto/buscarxPrecio" method="get"> 
+                            <label >Buscar por precio:</label>
+                            <br/>
+                            <input type="number" id="precioMin" name="precioMin" placeholder="Precio Minimo" value="$!{precioMin}"/><br/><br/>
+                            <input type="number" id="precioMax" name="precioMax" placeholder="Precio Maximo" value="$!{precioMax}"/><br/><br/>
+                            <input class="enviar" type="submit" value="Aplicar filtro"/>                                   
+                        </form> 
+                    </form>  
+                </div>
+            </div>
+        </button>
+        
+        <div class="container-icons"> 
+            <a href="/api/producto/verCarrito" style="color: black; text-decoration: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cart" viewBox="0 0 16 16">
+                    <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                </svg>
+            </a>
+        
+            <!--icono de perfil-->
+            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>                        <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+            </svg>
+        </div>
+    </div>
+</header>
+
+<script>
+    // Función para abrir la ventana modal
+    function abrirModal() {
+        var modal = document.getElementById('miVentanaModal');
+        modal.style.display = 'block';
+    }
+
+    // Función para cerrar la ventana modal
+    function cerrarModal() {
+        var modal = document.getElementById('miVentanaModal');
+        modal.style.display = 'none';
+    }
+</script>

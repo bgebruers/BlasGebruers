@@ -1,0 +1,31 @@
+<style>
+    .product {
+        text-align: center;
+        margin-bottom: 20px;
+        margin-top: 50px;
+
+    }
+
+    .product img {
+        width: 200px;
+        height: 150px;
+        margin-bottom: 10px;
+    }
+</style>
+
+<br>
+<br>
+<br>
+<div class="container text-center">
+    <h3>Nuestros productos...</h3><br>
+    <div class="row">
+        #foreach ($p in $respuesta)
+            <div class="col-sm-4">
+                <a href="/api/producto?prod=$p.getIdProducto()">
+                    <img src="/imagenes/$p.getImagen()" alt="$p.getNombre()" class="img-responsive" style="width:100%">
+                </a>
+                <p><b>$p.getNombre()</b></p>
+            </div>
+        #end
+    </div>
+</div><br>

@@ -1,0 +1,10 @@
+
+#include ("templates/encabezado.html")
+<body>   
+    #if(!$dontShow) <!--en casos excepcionales puede no mostrarse-->
+        #parse("templates/paginaPrincipal.vsl")
+    #end
+
+    #parse( $temp )  
+</body>
+#include ("templates/pie.html")
