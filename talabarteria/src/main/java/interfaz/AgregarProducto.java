@@ -28,6 +28,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import com.mycompany.talabarteria.Alertas;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.control.ComboBox;
 /**
  * Simple Preloader Using the ProgressBar Control
  *
@@ -35,7 +38,8 @@ import com.mycompany.talabarteria.Alertas;
  */
 public class AgregarProducto extends Application {
     private Label titleAgregar;
-    private TextField txNombre, txPrecio, txTipo, txStockActual, txProveedorVende;
+    private TextField txNombre, txPrecio, txStockActual;
+    private ComboBox txProveedorVende;
     private ConectionBD connBD;
     private Statement stmt;
     private VerStock vs;
@@ -96,21 +100,7 @@ public class AgregarProducto extends Application {
             }
         });
         
-        txTipo = new TextField("Ingrese el tipo");
-        txTipo.setStyle("-fx-background-radius: 5; -fx-border-radius: 5; -fx-text-fill: #B1B1B1;");
-        txTipo.setOnMouseClicked(e -> {
-            if (txTipo.getText().equals("Ingrese el tipo")) {
-                txTipo.setStyle("-fx-background-radius: 5; -fx-border-radius: 5;");
-                txTipo.clear();
-            }
-        });
-         //chequea si cambio de texto para poder cambiar el color de la letra
-        txTipo.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue.equals("Ingrese el tipo")) {
-                txTipo.setStyle("-fx-background-radius: 5; -fx-border-radius: 5;");
-            }
-        });
-         
+               
         txStockActual = new TextField("Ingrese el stock actual");
         txStockActual.setStyle("-fx-background-radius: 5; -fx-border-radius: 5; -fx-text-fill: #B1B1B1;");
         txStockActual.setOnMouseClicked(e -> {
@@ -126,25 +116,30 @@ public class AgregarProducto extends Application {
             }
         });
          
-        txProveedorVende = new TextField("Ingrese el nombre del proveedor");
-        txProveedorVende.setStyle("-fx-background-radius: 5; -fx-border-radius: 5; -fx-text-fill: #B1B1B1;");
-        txProveedorVende.setOnMouseClicked(e -> {
-            if (txProveedorVende.getText().equals("Ingrese el nombre del proveedor")) {
-                txProveedorVende.setStyle("-fx-background-radius: 5; -fx-border-radius: 5;");
-                txProveedorVende.clear();
-            }
+        txProveedorVende = new ComboBox<>();
+        Label placeholder = new Label("Ingrese un proveedor");
+        txProveedorVende = new ComboBox<>();
+        txProveedorVende.setEditable(true);
+        txProveedorVende.setStyle("-fx-background-radius: 5;");
+        txProveedorVende.setPrefWidth(1300);  
+        txProveedorVende.setPrefHeight(30);        
+        VBox.setMargin(txProveedorVende, insets);
+        txProveedorVende.setPlaceholder(placeholder);
+                
+        //este va a buscar a la base de datos con lo que se le ingresa
+        txProveedorVende.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
+            actualizarSugerencias(newValue);
         });
-            //chequea si cambio de texto para poder cambiar el color de la letra
-        txProveedorVende.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue.equals("Producto")) {
-                txProveedorVende.setStyle("-fx-background-radius: 5; -fx-border-radius: 5;");
+        txProveedorVende.getEditor().setOnKeyPressed(event -> {
+            if (!txProveedorVende.isShowing()) {
+                txProveedorVende.show();
             }
         });
          
         Button btGuardar = new Button("Agregar");
         btGuardar.setStyle(btStyle);
 
-        agregarVBox.getChildren().addAll(titleAgregar, txNombre, txPrecio, txTipo, txStockActual, txProveedorVende ,btGuardar);
+        agregarVBox.getChildren().addAll(titleAgregar, txNombre, txPrecio, txStockActual, txProveedorVende ,btGuardar);
         agregarVBox.setAlignment(Pos.CENTER);
         //agregarVBox.setSpacing(5);
         agregarVBox.setBackground(bkOscuro);
@@ -153,7 +148,6 @@ public class AgregarProducto extends Application {
         VBox.setMargin(titleAgregar, txInsets);
         VBox.setMargin(txNombre, txInsets );
         VBox.setMargin(txPrecio, txInsets);
-        VBox.setMargin(txTipo, txInsets);
         VBox.setMargin(txStockActual, txInsets);
         VBox.setMargin(txProveedorVende, txInsets);
         VBox.setMargin(btGuardar, txInsets);
@@ -172,9 +166,43 @@ public class AgregarProducto extends Application {
                 
             }
         });
-      
+        agregarStage.setResizable(false);
         agregarStage.show();
     }
+    
+    
+    private void actualizarSugerencias(String texto) {
+     try {
+        stmt = connBD.conect();
+    } catch (SQLException ex) {
+        Logger.getLogger(NuevaVenta.class.getName()).log(Level.SEVERE, null, ex);
+    }
+      String query = "SELECT \"nombre\" FROM \"Proveedores\" WHERE \"Proveedores\".\"nombre\" LIKE ?";
+
+      try (PreparedStatement pstmt = stmt.getConnection().prepareStatement(query)) {
+          String textoBusqueda = "%" + texto + "%";
+          pstmt.setString(1, textoBusqueda.toUpperCase());
+
+          ObservableList<String> sugerenciasList = FXCollections.observableArrayList();
+          try (ResultSet rs = pstmt.executeQuery()) {
+              while (rs.next()) {
+                  String nombreProducto = rs.getString("nombre");
+                  sugerenciasList.add(nombreProducto);
+              }
+          } catch (SQLException e) {
+              // Manejar excepciones si ocurren problemas con la consulta
+              e.printStackTrace();
+          }
+
+          txProveedorVende.setItems(sugerenciasList);
+
+        } catch (SQLException ex) {
+          Logger.getLogger(NuevaVenta.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    
+    
     
     public AgregarProducto(ConectionBD conn, VerStock verstock){
         connBD = conn;
@@ -199,9 +227,8 @@ public class AgregarProducto extends Application {
     private void onGuardarButtonClick(ActionEvent evt) throws SQLException{
         String nombre = txNombre.getText();
         double precio;
-        String tipo = txTipo.getText();
         int stock ;
-        String nombreProveedor = txProveedorVende.getText();
+        String nombreProveedor = txProveedorVende.getEditor().getText();
         int idProveedor = 0;
         
         stmt = connBD.conect();
@@ -219,11 +246,8 @@ public class AgregarProducto extends Application {
 
             }
         }
-        
-        
-        
+    
         if(nombre.equals("Ingrese el nombre") || nombre.equals("") ||
-            tipo.equals("Ingrese el tipo") || tipo.equals("") || 
             nombreProveedor.equals("Ingrese el proveedor") || nombreProveedor.equals("") ||
             txPrecio.getText().equals("Ingrese el precio") || txPrecio.getText().equals("") ||
             txStockActual.getText().equals("Ingrese el stock atual") || txStockActual.getText().equals("")){
@@ -235,27 +259,26 @@ public class AgregarProducto extends Application {
             String qyIdProducto = "SELECT \"idProveedor\" FROM \"Proveedores\" WHERE \"Proveedores\".\"nombre\" = ?";
 
             try (PreparedStatement pstmt = stmt.getConnection().prepareStatement(qyIdProducto)) {
-                pstmt.setString(1, nombreProveedor);
+                pstmt.setString(1, nombreProveedor.toUpperCase());
 
                 try (ResultSet rs = pstmt.executeQuery()) {
                     if (rs.next()) {
                         idProveedor = rs.getInt("idProveedor");
                     } else {
-                        alerta.mostrarAlerta("Error", "Ingresaste un nombre vacio o inexistente", "ERROR");
+                        alerta.mostrarAlerta("Error", "Ingresaste un nombre de proveedor vacio o inexistente", "ERROR");
                     }
                 }
             }
             if(idProveedor != 0){
-                String query = "INSERT INTO \"Productos\" (\"nombre\", \"tipo\", \"precio\", \"stock\", \"idProveedor\")"
-                        + " VALUES (?, ?, ?, ?, ?)";
+                String query = "INSERT INTO \"Productos\" (\"nombre\", \"precio\", \"stock\", \"idProveedor\")"
+                        + " VALUES (?, ?, ?, ?)";
                  try (PreparedStatement pstmt = stmt.getConnection().prepareStatement(query)) {
 
                     // Establecer valores de parámetros de la consulta preparada
                     pstmt.setString(1, nombre);
-                    pstmt.setString(2, tipo);
-                    pstmt.setDouble(3, precio); 
-                    pstmt.setInt(4, stock);
-                    pstmt.setInt(5, idProveedor);
+                    pstmt.setDouble(2, precio); 
+                    pstmt.setInt(3, stock);
+                    pstmt.setInt(4, idProveedor);
 
                     // Ejecutar la consulta
                     int filasAfectadas = pstmt.executeUpdate();
@@ -263,10 +286,8 @@ public class AgregarProducto extends Application {
                     if (filasAfectadas > 0) {
                         alerta.mostrarAlerta("Éxito", "Producto cargado correctamente.", "INFORMATION");
                         txNombre.setText("Ingrese el nombre");
-                        txTipo.setText("Ingrese el precio");
                         txPrecio.setText("Ingrese el tipo");
                         txStockActual.setText("Cantidad stock actual");
-                        txProveedorVende.setText("Ingrese el nombre del proveedor");
                         vs.updateTable();
                     }
                  } 

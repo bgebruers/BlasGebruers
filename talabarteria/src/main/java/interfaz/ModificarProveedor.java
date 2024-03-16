@@ -36,14 +36,14 @@ import com.mycompany.talabarteria.Alertas;
 public class ModificarProveedor extends Application {
     private ConectionBD connBD;
     private Label titleModificar;
-    private TextField txNombre, txCelular, txEmail;
+    private TextField txNombre, txCelular, txEmail, txCuit;
     private Statement stmt;
     private VerProveedores vp;
     private Stage agStage;
     private Alertas alerta = new Alertas();
-    private String nombreProveedor, celularProveedor, emailProveedor;
+    private String nombreProveedor, celularProveedor, emailProveedor, cuitProveedor;
     private int idProveedor;
-    private boolean cambioNombre ,cambioCelular, cambioEmail;
+    private boolean cambioNombre ,cambioCelular, cambioEmail, cambioCuit;
      //Estilos globales
     String btStyle = "-fx-min-width: 150px; " +
                 "-fx-min-height: 28px; " +
@@ -61,7 +61,7 @@ public class ModificarProveedor extends Application {
     public ModificarProveedor(ConectionBD conn, VerProveedores verProveedor, String nombreProveedor) {
         this.connBD = conn;
         this.vp = verProveedor;
-        consultaProveedor(nombreProveedor);
+        consultaProveedor(nombreProveedor.toUpperCase());
         Stage modificarStage = new Stage();
         try{   
             this.start(modificarStage);
@@ -80,7 +80,7 @@ public class ModificarProveedor extends Application {
         titleModificar = new Label("Modificar Producto");
         titleModificar.setFont(new Font(25));
         
-        txNombre = new TextField(nombreProveedor);
+        txNombre = new TextField(nombreProveedor.toUpperCase());
         txNombre.setPrefSize(230, 28);
         //chequea si cambio de texto para poder cambiar el color de la letra
         txNombre.textProperty().addListener((observable, oldValue, newValue) -> {
@@ -104,11 +104,20 @@ public class ModificarProveedor extends Application {
                 cambioEmail = true;
             }
         });  
-                       
+                
+        
+        txCuit = new TextField(cuitProveedor);
+        //chequea si cambio de texto para poder cambiar el color de la letra
+        txCuit.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.equals(cuitProveedor)) {
+                cambioCuit = true;
+            }
+        }); 
+        
         Button btGuardar = new Button("Modificar");
         btGuardar.setStyle(btStyle);
 
-        moficarVBox.getChildren().addAll(titleModificar, txNombre, txCelular, txEmail, btGuardar);
+        moficarVBox.getChildren().addAll(titleModificar, txNombre, txCelular, txEmail, txCuit, btGuardar);
         moficarVBox.setAlignment(Pos.CENTER);
         moficarVBox.setBackground(bkOscuro);
         
@@ -117,6 +126,7 @@ public class ModificarProveedor extends Application {
         VBox.setMargin(txNombre, txInsets );
         VBox.setMargin(txCelular, txInsets);
         VBox.setMargin(txEmail, txInsets);
+        VBox.setMargin(txCuit, txInsets);
         VBox.setMargin(btGuardar, txInsets);
         
         modificarStage.setScene(agregarScene);
@@ -133,7 +143,7 @@ public class ModificarProveedor extends Application {
                 
             }
         });
-      
+        modificarStage.setResizable(false);
         modificarStage.show();
     }
     
@@ -146,7 +156,7 @@ public class ModificarProveedor extends Application {
             Logger.getLogger(VerStock.class.getName()).log(Level.SEVERE, null, ex);
         } 
         if(cambioNombre){
-            nombreProveedor = txNombre.getText();
+            nombreProveedor = txNombre.getText().toUpperCase();
             query = "UPDATE \"Proveedores\" SET \"nombre\" = ? WHERE \"Proveedores\".\"idProveedor\" = ?";
             try (PreparedStatement pstmt = stmt.getConnection().prepareStatement(query)) {
                 // Establecer valores de parámetros de la consulta preparada
@@ -186,6 +196,20 @@ public class ModificarProveedor extends Application {
             }
         }
             
+        if(cambioCuit){
+            cuitProveedor = txCuit.getText();
+            query = "UPDATE \"Proveedores\" SET \"cuit\" = ? WHERE \"Proveedores\".\"idProveedor\" = ?";
+            try (PreparedStatement pstmt = stmt.getConnection().prepareStatement(query)) {
+                // Establecer valores de parámetros de la consulta preparada
+                pstmt.setString(1, cuitProveedor);
+                pstmt.setInt(2, idProveedor);
+                filasAfectadas = pstmt.executeUpdate();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(ModificarProducto.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+         
         if (filasAfectadas > 0) {
             alerta.mostrarAlerta("Exito", "Proveedor actualizado correctamente", "INFORMATION");
             vp.updateTable();
@@ -199,16 +223,17 @@ public class ModificarProveedor extends Application {
         } catch (SQLException ex) {
             Logger.getLogger(VerStock.class.getName()).log(Level.SEVERE, null, ex);
         }
-        String query = "SELECT \"idProveedor\", \"nombre\", \"celular\", \"email\""
+        String query = "SELECT \"idProveedor\", \"nombre\", \"celular\", \"email\", \"cuit\""
                 + " FROM \"Proveedores\" WHERE \"Proveedores\".\"nombre\" = ?";
         try (PreparedStatement pstmt = stmt.getConnection().prepareStatement(query)) {
-            pstmt.setString(1, nombreProductoSelected);
+            pstmt.setString(1, nombreProductoSelected.toUpperCase());
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     idProveedor = rs.getInt("idProveedor");
                     nombreProveedor = rs.getString("nombre");
                     celularProveedor = rs.getString("celular");
                     emailProveedor = rs.getString("email");
+                    cuitProveedor = rs.getString("cuit");
                 } 
             }
         }catch(SQLException e){

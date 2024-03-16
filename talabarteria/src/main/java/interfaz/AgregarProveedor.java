@@ -35,7 +35,7 @@ import javafx.stage.Stage;
  */
 public class AgregarProveedor extends Application {
     private Label titleAgregar;
-    private TextField txNombre, txCelular, txEmail;
+    private TextField txNombre, txCelular,txCuit, txEmail;
     private ConectionBD connBD;
     private Statement stmt;
     private VerProveedores vp;
@@ -110,12 +110,26 @@ public class AgregarProveedor extends Application {
                 txEmail.setStyle("-fx-background-radius: 5; -fx-border-radius: 5;");
             }
         });
+        txCuit = new TextField("Ingrese el CUIT");
+        txCuit.setStyle("-fx-background-radius: 5; -fx-border-radius: 5; -fx-text-fill: #B1B1B1;");
+        txCuit.setOnMouseClicked(e -> {
+            if (txCuit.getText().equals("Ingrese el CUIT")) {
+                txCuit.setStyle("-fx-background-radius: 5; -fx-border-radius: 5;");
+                txCuit.clear();
+            }
+        });
+         //chequea si cambio de texto para poder cambiar el color de la letra
+        txCuit.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.equals("Ingrese el CUIT")) {
+                txCuit.setStyle("-fx-background-radius: 5; -fx-border-radius: 5;");
+            }
+        });
          
                          
         Button btGuardar = new Button("Agregar");
         btGuardar.setStyle(btStyle);
 
-        agregarVBox.getChildren().addAll(titleAgregar, txNombre, txCelular, txEmail, btGuardar);
+        agregarVBox.getChildren().addAll(titleAgregar, txNombre, txCelular, txEmail, txCuit, btGuardar);
         agregarVBox.setAlignment(Pos.CENTER);
         //agregarVBox.setSpacing(5);
         agregarVBox.setBackground(bkOscuro);
@@ -125,6 +139,7 @@ public class AgregarProveedor extends Application {
         VBox.setMargin(txNombre, txInsets );
         VBox.setMargin(txCelular, txInsets);
         VBox.setMargin(txEmail, txInsets);
+        VBox.setMargin(txCuit, txInsets);
         VBox.setMargin(btGuardar, txInsets);
         
         agregarStage.setScene(agregarScene);
@@ -141,7 +156,7 @@ public class AgregarProveedor extends Application {
                 
             }
         });
-      
+        agregarStage.setResizable(false);
         agregarStage.show();
     }
     
@@ -166,9 +181,9 @@ public class AgregarProveedor extends Application {
     }
     
     private void onGuardarButtonClick(ActionEvent evt) throws SQLException{
-        String nombre = txNombre.getText();
-        System.out.println("el nombre del cliente ingresado es: "+ nombre);
+        String nombre = txNombre.getText().toUpperCase();
         String celular = txCelular.getText();
+        String cuit = txCuit.getText();
         if(celular.equals("Ingrese el celular") || celular.equals("")){
             celular = "";
         }
@@ -176,14 +191,16 @@ public class AgregarProveedor extends Application {
         if(email.equals("Ingrese el email") || email.equals("")){
             email = "";
         }
-        
+        if(cuit.equals("Ingrese el CUIT") || cuit.equals("")){
+            cuit = "";
+        }
         stmt = connBD.conect();
         
         String qyNombreProveedor = "SELECT \"nombre\" FROM \"Proveedores\"";
         try (PreparedStatement pstmt = stmt.getConnection().prepareStatement(qyNombreProveedor)) {     
             try (ResultSet rs = pstmt.executeQuery()) { 
                 while(rs.next()){
-                    if(rs.getString("nombre").equals(nombre)){
+                    if(rs.getString("nombre").equals(nombre.toUpperCase())){
                         alerta.mostrarAlerta("Error", "Ya existe un proveedor con ese nombre", "ERROR");
                         return;
                     }
@@ -197,14 +214,15 @@ public class AgregarProveedor extends Application {
         if(nombre.equals("Ingrese el nombre") || nombre.equals("")){
             alerta.mostrarAlerta("Error", "No puedes ingresar un proveedor sin nombre", "ERROR");
         }else{
-            String query = "INSERT INTO \"Proveedores\" (\"nombre\", \"celular\", \"email\")"
-                    + " VALUES (?, ?, ?)";
+            String query = "INSERT INTO \"Proveedores\" (\"nombre\", \"celular\", \"email\", \"cuit\")"
+                    + " VALUES (?, ?, ?, ?)";
             try (PreparedStatement pstmt = stmt.getConnection().prepareStatement(query)) {
                  
                 // Establecer valores de parámetros de la consulta preparada
-                pstmt.setString(1, nombre);
+                pstmt.setString(1, nombre.toUpperCase());
                 pstmt.setString(2, celular);
                 pstmt.setString(3, email); 
+                pstmt.setString(4, cuit); 
  
                 // Ejecutar la consulta
                 int filasAfectadas = pstmt.executeUpdate();
@@ -212,8 +230,13 @@ public class AgregarProveedor extends Application {
                 if (filasAfectadas > 0) {
                     alerta.mostrarAlerta("Éxito", "Proveedor cargado correctamente.", "INFORMATION");
                     txNombre.setText("Ingrese el nombre");
+                    txNombre.setStyle("-fx-background-radius: 5; -fx-border-radius: 5; -fx-text-fill: #B1B1B1;");
                     txCelular.setText("Ingrese el celular");
+                    txCelular.setStyle("-fx-background-radius: 5; -fx-border-radius: 5; -fx-text-fill: #B1B1B1;");
                     txEmail.setText("Ingrese el email");
+                    txEmail.setStyle("-fx-background-radius: 5; -fx-border-radius: 5; -fx-text-fill: #B1B1B1;");
+                    txCuit.setText("Ingrese el CUIT");
+                    txCuit.setStyle("-fx-background-radius: 5; -fx-border-radius: 5; -fx-text-fill: #B1B1B1;");
                     vp.updateTable();
                 }
             }  

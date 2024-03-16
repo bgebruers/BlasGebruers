@@ -36,14 +36,14 @@ import javafx.stage.Stage;
 public class ModificarCliente extends Application{
       private ConectionBD connBD;
     private Label titleModificar;
-    private TextField txNombre, txCelular, txEmail;
+    private TextField txNombre, txCelular, txEmail, txCuit;
     private Statement stmt;
     private VerClientes vc;
     private Stage agStage;
     private Alertas alerta = new Alertas();
-    private String nombreCliente, celularCliente, emailCliente;
+    private String nombreCliente, celularCliente, emailCliente, cuitCliente;
     private int idCliente;
-    private boolean cambioNombre ,cambioCelular, cambioEmail;
+    private boolean cambioNombre ,cambioCelular, cambioEmail, cambioCuit;
      //Estilos globales
     String btStyle = "-fx-min-width: 150px; " +
                 "-fx-min-height: 28px; " +
@@ -104,11 +104,20 @@ public class ModificarCliente extends Application{
                 cambioEmail = true;
             }
         });  
+        
+        
+        txCuit = new TextField(cuitCliente);
+        //chequea si cambio de texto para poder cambiar el color de la letra
+        txCuit.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.equals(cuitCliente)) {
+                cambioCuit = true;
+            }
+        });  
                        
         Button btGuardar = new Button("Modificar");
         btGuardar.setStyle(btStyle);
 
-        moficarVBox.getChildren().addAll(titleModificar, txNombre, txCelular, txEmail, btGuardar);
+        moficarVBox.getChildren().addAll(titleModificar, txNombre, txCelular, txEmail, txCuit, btGuardar);
         moficarVBox.setAlignment(Pos.CENTER);
         moficarVBox.setBackground(bkOscuro);
         
@@ -117,6 +126,7 @@ public class ModificarCliente extends Application{
         VBox.setMargin(txNombre, txInsets );
         VBox.setMargin(txCelular, txInsets);
         VBox.setMargin(txEmail, txInsets);
+        VBox.setMargin(txCuit, txInsets);
         VBox.setMargin(btGuardar, txInsets);
         
         modificarStage.setScene(agregarScene);
@@ -133,7 +143,7 @@ public class ModificarCliente extends Application{
                 
             }
         });
-      
+        modificarStage.setResizable(false);
         modificarStage.show();
     }
     
@@ -143,7 +153,7 @@ public class ModificarCliente extends Application{
         } catch (SQLException ex) {
             Logger.getLogger(VerStock.class.getName()).log(Level.SEVERE, null, ex);
         }
-        String query = "SELECT \"idCliente\", \"nombre\", \"celular\", \"email\" "
+        String query = "SELECT \"idCliente\", \"nombre\", \"celular\", \"email\", \"cuit\""
                 + "  FROM \"Clientes\" WHERE \"Clientes\".\"nombre\" = ?";
         try (PreparedStatement pstmt = stmt.getConnection().prepareStatement(query)) {
             pstmt.setString(1, nombreClienteSelected);
@@ -152,7 +162,8 @@ public class ModificarCliente extends Application{
                     idCliente = rs.getInt("idCliente");
                     nombreCliente = rs.getString("nombre");
                     celularCliente = rs.getString("celular");
-                    emailCliente = rs.getString("email");                    
+                    emailCliente = rs.getString("email");    
+                    cuitCliente = rs.getString("cuit");
                 } 
             }
           
@@ -171,11 +182,11 @@ public class ModificarCliente extends Application{
             Logger.getLogger(VerStock.class.getName()).log(Level.SEVERE, null, ex);
         } 
         if(cambioNombre){
-            nombreCliente = txNombre.getText();
+            nombreCliente = txNombre.getText().toUpperCase();
             query = "UPDATE \"Clientes\" SET \"nombre\" = ? WHERE \"Clientes\".\"idCliente\" = ?";
             try (PreparedStatement pstmt = stmt.getConnection().prepareStatement(query)) {
                 // Establecer valores de parámetros de la consulta preparada
-                pstmt.setString(1, nombreCliente);
+                pstmt.setString(1, nombreCliente.toUpperCase());
                 pstmt.setInt(2, idCliente);
                 filasAfectadas = pstmt.executeUpdate();
                 
@@ -203,6 +214,19 @@ public class ModificarCliente extends Application{
             try (PreparedStatement pstmt = stmt.getConnection().prepareStatement(query)) {
                 // Establecer valores de parámetros de la consulta preparada
                 pstmt.setString(1, emailCliente);
+                pstmt.setInt(2, idCliente);
+                filasAfectadas = pstmt.executeUpdate();
+
+            } catch (SQLException ex) {
+                Logger.getLogger(ModificarProducto.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+         if(cambioCuit){
+            cuitCliente = txCuit.getText();
+            query = "UPDATE \"Clientes\" SET \"cuit\" = ? WHERE \"Clientes\".\"idCliente\" = ?";
+            try (PreparedStatement pstmt = stmt.getConnection().prepareStatement(query)) {
+                // Establecer valores de parámetros de la consulta preparada
+                pstmt.setString(1, cuitCliente);
                 pstmt.setInt(2, idCliente);
                 filasAfectadas = pstmt.executeUpdate();
 

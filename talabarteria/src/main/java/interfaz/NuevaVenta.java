@@ -35,6 +35,11 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.layout.HBox;
 import interfaz.AgregarProducto;
 import com.mycompany.talabarteria.Alertas;
+import java.time.LocalDateTime;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.control.ComboBox;
+import javafx.scene.input.KeyEvent;
 
 /**
  * Simple Preloader Using the ProgressBar Control
@@ -44,10 +49,11 @@ import com.mycompany.talabarteria.Alertas;
 public class NuevaVenta extends Application {
     private VBox ventaForm;
     private HBox hbRadioButtons;
+    private Statement stmt;
     private Stage primaryLocalStage;
     private Label title ;
     private Button btConfirmar;
-    private TextField txProducto, txCliente, txCantidad;
+    private TextField txCliente, txCantidad;
     private String producto, cliente;
     private int cantidad;
     private RadioButton pago, noPago;
@@ -55,6 +61,7 @@ public class NuevaVenta extends Application {
     private Alertas alerta = new Alertas();
     private AgregarProducto agregarProducto;
     private AgregarCliente agregarCliente;
+    ComboBox<String> txProducto = new ComboBox<>();
     String btStyle = "-fx-min-width: 150px; " +
                 "-fx-min-height: 35px; " +
                 "-fx-max-width: 20px; " +
@@ -71,27 +78,27 @@ public class NuevaVenta extends Application {
         title = new Label("Registro de nueva venta");
         title.setFont(new Font(25));
         VBox.setMargin(title, insets);
-         
-        txProducto = new TextField("Producto");
-        txProducto.setStyle("-fx-background-radius: 5; -fx-border-radius: 5; -fx-text-fill: #B1B1B1;");
+        
+               
+        Label placeholder = new Label("Ingrese un producto");
+        txProducto = new ComboBox<>();
+        txProducto.setEditable(true);
+        txProducto.setStyle("-fx-background-radius: 5;");
+        txProducto.setPrefWidth(1300);  
         txProducto.setPrefHeight(30);        
         VBox.setMargin(txProducto, insets);
-        
-        txProducto.setOnMouseClicked(e -> {
-            if (txProducto.getText().equals("Producto")) {
-                txProducto.setStyle("-fx-background-radius: 5; -fx-border-radius: 5;");
-                txProducto.clear();
+        txProducto.setPlaceholder(placeholder);
+                
+        //este va a buscar a la base de datos con lo que se le ingresa
+        txProducto.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
+            actualizarSugerencias(newValue);
+        });
+        txProducto.getEditor().setOnKeyPressed(event -> {
+            if (!txProducto.isShowing()) {
+                txProducto.show();
             }
         });
-        //chequea si cambio de texto para poder cambiar el color de la letra
-        txProducto.textProperty().addListener((observable, oldValue, newValue) -> {
-
-            if (!newValue.equals("Producto")) {
-                txProducto.setStyle("-fx-background-radius: 5; -fx-border-radius: 5;");
-            }
-        });
-
-        
+     
         txCantidad = new TextField("Cantidad vendida");
         txCantidad.setStyle("-fx-background-radius: 5; -fx-border-radius: 5; -fx-text-fill: #B1B1B1;");
         txCantidad.setPrefHeight(30);
@@ -162,7 +169,7 @@ public class NuevaVenta extends Application {
                 }
             }
         });
-         
+      
     
         //color verde oscuro
         BackgroundFill bk = new BackgroundFill(Color.web("#64AE49"), null, null);
@@ -171,7 +178,7 @@ public class NuevaVenta extends Application {
         ventaForm.setAlignment(Pos.TOP_CENTER);
         ventaForm.setPadding(new Insets(10));
                
-        ventaForm.getChildren().addAll(title, txProducto, txCantidad , txCliente,  hbRadioButtons,btConfirmar);
+        ventaForm.getChildren().addAll(title, txProducto, txCantidad, txCliente, hbRadioButtons, btConfirmar);
         
         ventaStage.setTitle("Registro Nueva Venta");
        
@@ -179,7 +186,37 @@ public class NuevaVenta extends Application {
         ventaStage.setScene(nuevaVentanaScene);
         ventaStage.show();
     }
+      
+ 
+    private void actualizarSugerencias(String texto) {
+         try {
+            stmt = connBD.conect();
+        } catch (SQLException ex) {
+            Logger.getLogger(NuevaVenta.class.getName()).log(Level.SEVERE, null, ex);
+        }
+          String query = "SELECT \"nombre\" FROM \"Productos\" WHERE \"Productos\".\"nombre\" LIKE ? AND \"Productos\".\"nombre\" <> 'ENTREGA'";
 
+          try (PreparedStatement pstmt = stmt.getConnection().prepareStatement(query)) {
+              String textoBusqueda = "%" + texto + "%";
+              pstmt.setString(1, textoBusqueda);
+              
+              ObservableList<String> sugerenciasList = FXCollections.observableArrayList();
+              try (ResultSet rs = pstmt.executeQuery()) {
+                  while (rs.next()) {
+                      String nombreProducto = rs.getString("nombre");
+                      sugerenciasList.add(nombreProducto);
+                  }
+              } catch (SQLException e) {
+                  // Manejar excepciones si ocurren problemas con la consulta
+                  e.printStackTrace();
+              }
+    
+              txProducto.setItems(sugerenciasList);
+              
+            } catch (SQLException ex) {
+              Logger.getLogger(NuevaVenta.class.getName()).log(Level.SEVERE, null, ex);
+            }
+    }
     public NuevaVenta(ConectionBD conn){
        connBD = conn;
        primaryLocalStage = new Stage();
@@ -191,26 +228,27 @@ public class NuevaVenta extends Application {
     }
     
     private void onConfirmarButtonClick(ActionEvent evt) throws SQLException, ParseException {
-        Statement stmt = connBD.conect();
+        stmt = connBD.conect();
         int idProducto = 0;
         int idCliente = 0;
         double precioProducto = 0;
-        producto = txProducto.getText();
-        cliente = txCliente.getText();
+        //producto = txProducto.getText();
+        producto = txProducto.getEditor().getText();
+        cliente = txCliente.getText().toUpperCase();
         if(txCantidad.getText().isEmpty() || txCantidad.getText().equals("Cantidad vendida")){
             cantidad = 0;
         }else{
             cantidad = Integer.parseInt(txCantidad.getText());
         }
- 
-        // Obtener la fecha actual y formatearla como "yyyy-MM-dd"
-        LocalDate fechaActual = LocalDate.now();
-        DateTimeFormatter formato = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        //se inserta la fecha con hora para hacer el cancelar deuda.
+        LocalDateTime fechaActual = LocalDateTime.now();
+           
+        DateTimeFormatter formato = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String fechaFormateada = fechaActual.format(formato);
+           
+        LocalDateTime fechaHoraParseada = LocalDateTime.parse(fechaFormateada, formato);
 
-        // Convertir la fecha formateada de nuevo a LocalDate
-        LocalDate date = LocalDate.parse(fechaFormateada, formato);
-        
+        java.sql.Timestamp timestamp = java.sql.Timestamp.valueOf(fechaHoraParseada);
 
         String qyIdProducto = "SELECT \"idProducto\", \"precio\" FROM \"Productos\" WHERE \"Productos\".\"nombre\" = ?";
 
@@ -252,7 +290,7 @@ public class NuevaVenta extends Application {
 
 
            try (PreparedStatement pstmt = stmt.getConnection().prepareStatement(qyIdCliente)) {
-            pstmt.setString(1, cliente);
+            pstmt.setString(1, cliente.toUpperCase());
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
@@ -288,19 +326,36 @@ public class NuevaVenta extends Application {
                 }
             }
         }
+           
+           
+        String qyStock = "SELECT \"stock\" FROM \"Productos\" WHERE \"Productos\".\"idProducto\" = ?";
+        try (PreparedStatement pstmtConsultaStock = stmt.getConnection().prepareStatement(qyStock)) {
+            pstmtConsultaStock.setInt(1, idProducto);
+            try {
+                ResultSet resultSet = pstmtConsultaStock.executeQuery(); // Corregido aquíblas
+                if (resultSet.next()) {
+                    int stockActual = resultSet.getInt("stock");
+                    if (cantidad > stockActual) {
+                        alerta.mostrarAlerta("Error", "No puedes vender mas del stock: " + stockActual, "ERROR");
+                        return;
+                    }
+                }
+            } catch (SQLException e) {
+                System.out.println("Error al obtener el nuevo stock: " + e.getMessage());
+            }
+        }
 
 
         String query = "INSERT INTO \"Ventas\" (\"cantidad\", \"fecha\", \"idCliente\", \"idProducto\")"
                     + " VALUES (?, ?, ?, ?)";
-
         if (cantidad == 0) {
             alerta.mostrarAlerta("Error", "Debe ingresar una cantidad vendida", "ERROR");    
-        }else{
+        }else if(idProducto != 0){
             try (PreparedStatement pstmt = stmt.getConnection().prepareStatement(query)) {
 
                 // Establecer valores de parámetros de la consulta preparada
                 pstmt.setInt(1, cantidad);
-                pstmt.setDate(2, java.sql.Date.valueOf(date));
+                pstmt.setTimestamp(2, timestamp);
                 pstmt.setInt(3, idCliente); 
                 pstmt.setInt(4, idProducto);
 
@@ -310,7 +365,8 @@ public class NuevaVenta extends Application {
                 if (filasAfectadas > 0) {
                     alerta.mostrarAlerta("Éxito", "Venta insertada correctamente.", "INFORMATION");
                     // Resetear los TextField después del éxito
-                    txProducto.setText("Producto");
+                   // txProducto.setText("Producto");
+                    
                     txCliente.setText("Ingrese un cliente");
                     txCantidad.setText("Cantidad vendida");
                     pago.setSelected(true);
@@ -323,13 +379,25 @@ public class NuevaVenta extends Application {
                        pstmtActualizarStock.setInt(1, cantidad);
                        pstmtActualizarStock.setInt(2, idProducto);
 
-                       int filaAfectada = pstmtActualizarStock.executeUpdate();
+                       pstmtActualizarStock.executeUpdate();
 
-                       if (filasAfectadas > 0) {
-                           System.out.println("Stock actualizado correctamente.");
-                       } else {
-                           System.out.println("No se pudo actualizar el stock.");
-                       }
+                       String qyNuevoStock = "SELECT \"stock\" FROM \"Productos\" WHERE \"Productos\".\"idProducto\" = ?";
+                        try (PreparedStatement pstmtConsultaStock = stmt.getConnection().prepareStatement(qyNuevoStock)) {
+                            pstmtConsultaStock.setInt(1, idProducto);
+                            try {
+                                ResultSet resultSet = pstmtConsultaStock.executeQuery(); // Corregido aquíblas
+                                if (resultSet.next()) {
+                                    int nuevoStock = resultSet.getInt("stock");
+                                    System.out.println("nuevo stock: " + nuevoStock);
+                                    if (nuevoStock <= 10) {
+                                        alerta.mostrarAlerta("¡Advertencia!", "El stock del producto: " + producto + " es de: " + nuevoStock, "INFORMATION");
+                                    }
+                                }
+                            } catch (SQLException e) {
+                                System.out.println("Error al obtener el nuevo stock: " + e.getMessage());
+                            }
+                        }
+                       
                     } catch (SQLException e) {
                        System.out.println("Error al actualizar el stock: " + e.getMessage());
                     }
@@ -339,14 +407,7 @@ public class NuevaVenta extends Application {
                     try (PreparedStatement pstmtActualizarSaldo = stmt.getConnection().prepareStatement(queryActualizarSaldoCliente)) {
                        pstmtActualizarSaldo.setDouble(1, (precioProducto*cantidad));
                        pstmtActualizarSaldo.setInt(2, idCliente);
-
-                       int filaAfectada = pstmtActualizarSaldo.executeUpdate();
-
-                       if (filasAfectadas > 0) {
-                           System.out.println("Stock actualizado correctamente.");
-                       } else {
-                           System.out.println("No se pudo actualizar el stock.");
-                       }
+                       pstmtActualizarSaldo.executeUpdate();
                     } catch (SQLException e) {
                        System.out.println("Error al actualizar el stock: " + e.getMessage());
                     }

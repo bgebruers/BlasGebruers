@@ -28,6 +28,5 @@
             <artifactId>itextpdf</artifactId>
             <version>5.5.13.3</version> <!-- Reemplaza esto con la versión más reciente -->
         </dependency>
-        
     </dependencies>
 </project>

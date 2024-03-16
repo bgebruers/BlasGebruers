@@ -28,6 +28,9 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import com.mycompany.talabarteria.Alertas;
 import java.sql.ResultSet;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 /**
  *
  * @author usuario
@@ -65,13 +68,13 @@ public class AgregarEntregaCliente extends Application {
         
         nombreCliente = new Label("Cliente: " + nombre);
         nombreCliente.setFont(new Font(15));
-        VBox.setMargin(nombreCliente, insets);
+        VBox.setMargin(nombreCliente, new Insets(13,0,0,13));
         
         txEntrega = new TextField("Ingrese el monto entregado");
         txEntrega.setStyle("-fx-background-radius: 5; -fx-border-radius: 5; -fx-text-fill: #B1B1B1;");
-        VBox.setMargin(txEntrega, insets);
+        VBox.setMargin(txEntrega, new Insets(13,13,0,13));
         
-        txEntrega.setPrefSize(90, 28);
+        txEntrega.setPrefSize(180, 28);
         txEntrega.setOnMouseClicked(e -> {
             if (txEntrega.getText().equals("Ingrese el monto entregado")) {
                 txEntrega.setStyle("-fx-background-radius: 5; -fx-border-radius: 5;");
@@ -109,6 +112,7 @@ public class AgregarEntregaCliente extends Application {
         bxEntrega.setAlignment(Pos.TOP_CENTER);
         
         entregaStage.setScene(entregaScene);
+        entregaStage.setResizable(false);
         entregaStage.setTitle("Agregar Entrega de Cliente");
         entregaStage.show();
         
@@ -127,50 +131,75 @@ public class AgregarEntregaCliente extends Application {
     private void onConfirmarButtonClick(ActionEvent evt) throws SQLException{
         int filasAfectadas = 0;
         int filasAfectadasXSaldo;
+        int idCliente = 0;
+        double entrega = 0; 
+        
+        LocalDateTime fechaActual = LocalDateTime.now();
+           
+        DateTimeFormatter formato = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String fechaFormateada = fechaActual.format(formato);
+         
+        LocalDateTime fechaHoraParseada = LocalDateTime.parse(fechaFormateada, formato);
+        java.sql.Timestamp timestamp = java.sql.Timestamp.valueOf(fechaHoraParseada);
+
+        // Convertir la fecha formateada de nuevo a LocalDate
+        LocalDate date = LocalDate.parse(fechaFormateada, formato);
         try {
             stmt = connBD.conect();
         } catch (SQLException ex) {
             Logger.getLogger(VerStock.class.getName()).log(Level.SEVERE, null, ex);
         } 
          
-            double entrega = Double.parseDouble(txEntrega.getText());
+            entrega = Double.parseDouble(txEntrega.getText());
             String query = "UPDATE \"Clientes\" SET \"entrega\" = ? WHERE \"Clientes\".\"nombre\" = ?";
             try (PreparedStatement pstmt = stmt.getConnection().prepareStatement(query)) {
                 pstmt.setDouble(1, entrega);
-                pstmt.setString(2, nombre);
+                pstmt.setString(2, nombre.toUpperCase());
                 filasAfectadas = pstmt.executeUpdate();
             } catch (SQLException ex) {
                 System.out.println("error del tipo: "+  ex);
                 //Logger.getLogger(ModificarProducto.class.getName()).log(Level.SEVERE, null, ex);
             }
             if (filasAfectadas > 0) {
-               String qySaldo = "SELECT \"saldo\" FROM \"Clientes\" WHERE \"Clientes\".\"nombre\" = ?";
-            try {
-                try (PreparedStatement pstmtSaldo = stmt.getConnection().prepareStatement(qySaldo)) {
-                    pstmtSaldo.setString(1, nombre);
-                    ResultSet resultSet = pstmtSaldo.executeQuery();
+               String qySaldo = "SELECT \"saldo\", \"idCliente\" FROM \"Clientes\" WHERE \"Clientes\".\"nombre\" = ?";
+                try {
+                    try (PreparedStatement pstmtSaldo = stmt.getConnection().prepareStatement(qySaldo)) {
+                        pstmtSaldo.setString(1, nombre.toUpperCase());
+                        ResultSet resultSet = pstmtSaldo.executeQuery();
 
-                    while (resultSet.next()) {
-                        double saldo = resultSet.getDouble("saldo");
-                        double nuevoSaldo = saldo - entrega;
-                        System.out.println("Nuevo saldo es: " + nuevoSaldo);
+                        while (resultSet.next()) {
+                            double saldo = resultSet.getDouble("saldo");
+                            double nuevoSaldo = saldo - entrega;
+                            idCliente = resultSet.getInt("idCliente");
+                            String updateQuery = "UPDATE \"Clientes\" SET \"saldo\" = ? WHERE \"Clientes\".\"nombre\" = ?";
+                            try (PreparedStatement pstmtUpdate = stmt.getConnection().prepareStatement(updateQuery)) {
+                                pstmtUpdate.setDouble(1, nuevoSaldo);
+                                pstmtUpdate.setString(2, nombre.toUpperCase());
 
-                        String updateQuery = "UPDATE \"Clientes\" SET \"saldo\" = ? WHERE \"Clientes\".\"nombre\" = ?";
-                        try (PreparedStatement pstmtUpdate = stmt.getConnection().prepareStatement(updateQuery)) {
-                            pstmtUpdate.setDouble(1, nuevoSaldo);
-                            pstmtUpdate.setString(2, nombre);
-
-                            filasAfectadasXSaldo = pstmtUpdate.executeUpdate();
-                            if (filasAfectadasXSaldo > 0) {
-                                alerta.mostrarAlerta("Éxito", "Entrega actualizada correctamente", "INFORMATION");
-                                vc.updateTable();
+                                filasAfectadasXSaldo = pstmtUpdate.executeUpdate();
+                                if (filasAfectadasXSaldo > 0) {
+                                    alerta.mostrarAlerta("Éxito", "Entrega actualizada correctamente", "INFORMATION");
+                                    vc.updateTable();
+                                }
                             }
+                            
+                            
+                            String qyEntrega = "INSERT INTO \"Ventas\" (\"cantidad\", \"fecha\", \"idCliente\", \"idProducto\", \"entrega\")"
+                                 + " VALUES (?, ?, ?, ?, ?)";
+                            try (PreparedStatement pstmt = stmt.getConnection().prepareStatement(qyEntrega)) {
+
+                                pstmt.setInt(1, 0);
+                                pstmt.setTimestamp(2, timestamp);
+                                pstmt.setInt(3, idCliente); 
+                                pstmt.setInt(4, -1);
+                                pstmt.setDouble(5, entrega);
+                                pstmt.executeUpdate();                               
+                            }      
                         }
                     }
+                } catch (SQLException e) {
+                    System.out.println("Error del tipo: " + e);
                 }
-            } catch (SQLException e) {
-                System.out.println("Error del tipo: " + e);
-            }
 
             }
           

@@ -55,7 +55,7 @@ public class VerClientes extends Application{
     private VBox bxClientes, bxTable;
     private HBox hxButtons;
     private double anchoEscena; 
-    private int tamañoColumna = 333;
+    private int tamañoColumna = 250;
     private Alertas alerta = new Alertas();
     Statement stmt;
     TableView<VerClientes.Cliente> tabla = new TableView<>();
@@ -153,7 +153,10 @@ public class VerClientes extends Application{
         columnaEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
         columnaEmail.setPrefWidth(tamañoColumna);
 
-     
+        TableColumn<VerClientes.Cliente, Integer> columnaCuit = new TableColumn<>("CUIT");
+        columnaCuit.setCellValueFactory(new PropertyValueFactory<>("cuit"));
+        columnaCuit.setPrefWidth(tamañoColumna);
+
         
         //este codigo me permite darle el click a la fila y sacar el nombre del producto
         tabla.setRowFactory(tv -> {
@@ -209,15 +212,16 @@ public class VerClientes extends Application{
             @Override
             public void changed(ObservableValue<? extends Number> observableValue, Number oldValue, Number newValue) {
                 anchoEscena = (double) newValue;
-                tamañoColumna = (int) (anchoEscena / 3);
+                tamañoColumna = (int) (anchoEscena / 4);
                 columnaNombre.setPrefWidth(tamañoColumna); 
                 columnaCelular.setPrefWidth(tamañoColumna); 
                 columnaEmail.setPrefWidth(tamañoColumna); 
+                columnaCuit.setPrefWidth(tamañoColumna);
                
             }
         });
         // Agregar columnas a la tabla
-        tabla.getColumns().addAll(columnaNombre, columnaCelular, columnaEmail);
+        tabla.getColumns().addAll(columnaNombre, columnaCelular, columnaEmail, columnaCuit);
         cargarClientesDesdeBD(tabla);
         bxTable.getChildren().add(tabla);
         
@@ -247,12 +251,14 @@ public class VerClientes extends Application{
         private String nombre;
         private String celular;
         private String email;
+        private String cuit;
 
 
-        public Cliente(String nombre, String celular, String email) {
+        public Cliente(String nombre, String celular, String email, String cuit) {
             this.nombre = nombre;
             this.celular = celular;
             this.email = email;
+            this.cuit = cuit;
         }
 
         public String getNombre() {
@@ -266,15 +272,17 @@ public class VerClientes extends Application{
         public String getEmail() {
             return email;
         }
+        public String getCuit(){
+            return cuit;
+        }
     } 
      
     private void onEliminarButtonClick(ActionEvent evt, String nombreClienteSelected){
-        System.out.println("nombre del cliente seleccionado: " + nombreClienteSelected);
         boolean ok = alerta.mostrarAlertaConfirmacion("¡Advertencia!", "¿Desea eliminar este producto?", "CONFIRMATION");
         if(ok ){
             String query = "DELETE FROM \"Clientes\" WHERE \"Clientes\".\"nombre\" = ?";
             try (PreparedStatement pstmt = stmt.getConnection().prepareStatement(query)) {
-                pstmt.setString(1, nombreClienteSelected);
+                pstmt.setString(1, nombreClienteSelected.toUpperCase());
                 
                 int filasAfectadas = pstmt.executeUpdate();
                 if(filasAfectadas > 0){
@@ -315,7 +323,7 @@ public class VerClientes extends Application{
     private void cargarClientesDesdeBD(TableView<VerClientes.Cliente> tabla) throws SQLException {
         stmt = connBD.conect();
         
-        String query = "SELECT \"idCliente\", \"nombre\", \"celular\", \"email\" FROM \"Clientes\"";
+        String query = "SELECT \"idCliente\", \"nombre\", \"celular\", \"email\", \"cuit\" FROM \"Clientes\"";
         try {
             ResultSet resultSet = stmt.executeQuery(query);
 
@@ -324,11 +332,12 @@ public class VerClientes extends Application{
 
             while (resultSet.next()) {
                 int idCliente = resultSet.getInt("idCliente");
-                String nombre = resultSet.getString("nombre");
+                String nombre = resultSet.getString("nombre").toUpperCase();
                 String celular = resultSet.getString("celular");
                 String email = resultSet.getString("email");
+                String cuit = resultSet.getString("cuit");
                 if(idCliente != 0){
-                   listaClientes.add(new VerClientes.Cliente(nombre, celular, email));
+                   listaClientes.add(new VerClientes.Cliente(nombre, celular, email, cuit));
                 }   
             }
 

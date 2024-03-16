@@ -155,7 +155,7 @@ public class ModificarProducto extends Application {
                 
             }
         });
-      
+        modificarStage.setResizable(false);
         modificarStage.show();
     }
     

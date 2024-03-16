@@ -31,8 +31,10 @@ import javafx.stage.Stage;
 import interfaz.Inicio;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.scene.control.Alert;
 import com.mycompany.talabarteria.Alertas;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 /**
  * Simple Preloader Using the ProgressBar Control
  *
@@ -51,62 +53,71 @@ public class Login extends Application {
     @Override
     public void start(Stage primaryStage) throws SQLException {
         this.primaryStage = primaryStage;
-      
-        stmt = connBD.conect();                    
+        stmt = connBD.conect();  
         
-
-        Label lbPrin = new Label("Talabarteria Luiggi");
+        HBox root = new HBox();
+       
+        VBox containerLeft = new VBox();
+        
+        Label lbPrin = new Label("Iniciar Sesion");
         lbPrin.setFont(new Font(30));
         
+        
+        VBox containerLogin = new VBox();    
         Label lbUsuario = new Label("Ingrese un usuario");
         lbUsuario.setFont(new Font(17));
+        VBox.setMargin(lbUsuario, new Insets(10, 0, 0, 0));
         
         Label lbContra = new Label("Ingrese su contraseña");
         lbContra.setFont(new Font(17));
+        VBox.setMargin(lbContra, new Insets(10, 0, 0, 0));
         
-        
-        txUsuario.setPrefHeight(30);
         txUsuario.setStyle("-fx-background-radius: 5; -fx-border-radius: 5;");
-        
-       
-        txContra.setPrefHeight(30);
+        txUsuario.setPrefWidth(341);
+        txUsuario.setPrefHeight(34);
+      
         txContra.setStyle("-fx-background-radius: 5; -fx-border-radius: 5;");
-        
-       
+        txContra.setPrefWidth(341);
+        txContra.setPrefHeight(34);
+          
         btLogin.setCursor(Cursor.HAND);
-        btLogin.setStyle("-fx-background-color: yellow; -fx-font-size: 16; -fx-border-radius: 5"); // Cambiar color a amarillo
-        btLogin.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE); // Hacer que el botón se expanda
-        VBox.setMargin(btLogin, new Insets(10, 0, 0, 0));
+        btLogin.setStyle("-fx-background-color: yellow; -fx-font-size: 16; -fx-border-radius: 5"); 
+        btLogin.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE); 
+        VBox.setMargin(btLogin, new Insets(20, 0, 0, 0));
         
-        //componente que contiene al otro, este esta para que se pueda pintar de color claro
-        VBox bxPrincipal = new VBox();
-        bxPrincipal.setSpacing(10);
-        bxPrincipal.setPadding(new Insets(10));
-        
-        //este componente es el que contiene todos los demas, es el rectangulo del centro
-        VBox root = new VBox();
-        root.setSpacing(10);
-        root.setPadding(new Insets(10));
-        root.setMinSize(250, 250); 
-        root.setMaxSize(250, 250); 
-        bxPrincipal.setAlignment(Pos.CENTER);
+        containerLogin.getChildren().addAll(lbUsuario, txUsuario, lbContra, txContra, btLogin);
+        containerLogin.setAlignment(Pos.TOP_LEFT);
         
         
-        bxPrincipal.getChildren().addAll(lbPrin, root);
-        
-        //color claro
+          //color claro
         BackgroundFill backgroundFill = new BackgroundFill(Color.web("#D9FFC1"), null, null);
         Background background = new Background(backgroundFill);
-        bxPrincipal.setBackground(background);
         
-        //color verde oscuro
-        BackgroundFill bk = new BackgroundFill(Color.web("#64AE49"), null, null);
-        Background background2 = new Background(bk);
-        root.setBackground(background2);
+        containerLeft.getChildren().addAll(lbPrin, containerLogin);
+        containerLeft.setPrefWidth(400);
+        containerLeft.setAlignment(Pos.CENTER);
+        containerLeft.setBackground(background);
         
-        root.getChildren().addAll(lbUsuario, txUsuario, lbContra, txContra, btLogin);
-             
-        Scene scene = new Scene(bxPrincipal, 1200, 600);
+        VBox.setMargin(containerLogin, new Insets(0, 30, 0, 30));
+        
+                  //color negro
+        BackgroundFill backgroundFillNegro = new BackgroundFill(Color.web("#36373b"), null, null);
+        Background bkNegro = new Background(backgroundFillNegro);
+        VBox containerRight = new VBox();
+        Image img = new Image(getClass().getResourceAsStream("/images/logo.png"));
+        ImageView imgView = new ImageView(img);
+        imgView.setFitHeight(400);
+        imgView.setFitWidth(470);
+        
+        containerRight.getChildren().add(imgView);
+        containerRight.setPrefWidth(400);
+        containerRight.setAlignment(Pos.CENTER);
+        containerRight.setBackground(bkNegro);
+        
+        root.getChildren().addAll(containerLeft, containerRight );
+        root.setAlignment(Pos.CENTER);
+            
+        Scene scene = new Scene(root, 854, 503);
         
         btLogin.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -123,6 +134,7 @@ public class Login extends Application {
 
         primaryStage.setTitle("Talabarteria Luiggi");
         primaryStage.setScene(scene);
+        primaryStage.setResizable(false);
         primaryStage.show();  
         
     }
@@ -145,6 +157,7 @@ public class Login extends Application {
 
 //Este if lo que hace es, si coinciden los datos llamo a la clase inicio, pido su scena y luego seteo como primaria la de ella.        
         if(acceso){
+            
           //le paso la primaryStage para poder usarla en Inicio.
             Inicio ini = new Inicio(primaryStage, connBD);
             Scene scene = ini.getScene();

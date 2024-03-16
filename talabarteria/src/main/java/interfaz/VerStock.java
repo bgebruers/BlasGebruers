@@ -269,6 +269,7 @@ public class VerStock extends Application {
     private void cargarProductosDesdeBD(TableView<Producto> tabla) throws SQLException {
         stmt = connBD.conect();
         String nombreProveedor = null;
+        String nombre = null;
         String query = "SELECT \"nombre\", \"precio\", \"stock\", \"idProveedor\" FROM \"Productos\"";
         try {
             ResultSet resultSet = stmt.executeQuery(query);
@@ -277,23 +278,28 @@ public class VerStock extends Application {
             listaProductos.clear();
 
             while (resultSet.next()) {
-                String nombre = resultSet.getString("nombre");
-                double precio = resultSet.getDouble("precio");
-                int stock = resultSet.getInt("stock");
-                int idProveedor = resultSet.getInt("idProveedor");
+                nombre = resultSet.getString("nombre");
 
-                String qyIdProducto = "SELECT \"nombre\" FROM \"Proveedores\" WHERE \"Proveedores\".\"idProveedor\" = ?";
-                try (PreparedStatement pstmt = stmt.getConnection().prepareStatement(qyIdProducto)) {
-                    pstmt.setInt(1, idProveedor);
+                if (!nombre.equals("ENTREGA")) {
+                    double precio = resultSet.getDouble("precio");
+                    int stock = resultSet.getInt("stock");
+                    int idProveedor = resultSet.getInt("idProveedor");
 
-                    try (ResultSet rs = pstmt.executeQuery()) {
-                        if (rs.next()) {
-                            nombreProveedor = rs.getString("nombre");
+                    String qyIdProducto = "SELECT \"nombre\" FROM \"Proveedores\" WHERE \"Proveedores\".\"idProveedor\" = ?";
+                    nombreProveedor = "";
+
+                    try (PreparedStatement pstmt = stmt.getConnection().prepareStatement(qyIdProducto)) {
+                        pstmt.setInt(1, idProveedor);
+                        try (ResultSet rs = pstmt.executeQuery()) {
+                            if (rs.next()) {
+                                nombreProveedor = rs.getString("nombre");
+                                
+                            }
                         }
                     }
-                }
 
-                listaProductos.add(new Producto(nombre, precio, stock, nombreProveedor));
+                    listaProductos.add(new Producto(nombre, precio, stock, nombreProveedor.toUpperCase()));
+                }
             }
 
             // Establecer la lista de productos en la tabla
@@ -302,6 +308,7 @@ public class VerStock extends Application {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    
     }
 
     private void onAgregarButtonClick(ActionEvent evt) {

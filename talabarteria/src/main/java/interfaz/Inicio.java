@@ -6,6 +6,7 @@
 package interfaz;
 
 
+import com.mycompany.talabarteria.Alertas;
 import com.mycompany.talabarteria.ConectionBD;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -24,6 +25,10 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import interfaz.NuevaVenta;
 import javafx.application.Application;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
+
 /**
  * Simple Preloader Using the ProgressBar Control
  *
@@ -33,15 +38,16 @@ public class Inicio extends Application {
     private Scene scene;
     private Stage primaryStage;
     private Label title, menu;
-    private VBox inicioRoot, bxTitle, bxMenu; 
+    private VBox bxTitle, bxMenu; 
+    private BorderPane inicioRoot;
     private HBox hxBody;    //el logo va en este
-    private Button btVenta, btStock, btProveedor, btResumen, btClientes, btEmpleado, btAgregarProducto, btCerrarSesion;
+    private Button btVenta, btStock, btProveedor, btResumen, btClientes, btEmpleado, btCerrarSesion;
     private ConectionBD connBD;
+    private Alertas alerta = new Alertas();
+    
     @Override
     public void start(Stage primaryStage) throws Exception {
-        //principal, el que ocupara toda la scene de fondo  
-        inicioRoot = new VBox();
-        inicioRoot.setSpacing(10);
+        inicioRoot = new BorderPane();
         
         bxTitle = new VBox();
         title = new Label("Talabarteria Luiggi");
@@ -61,15 +67,18 @@ public class Inicio extends Application {
         
         bxMenu = new VBox();
         bxMenu.setBackground(background2);
-                
-        //color claro
-        BackgroundFill backgroundFill = new BackgroundFill(Color.web("#D9FFC1"), null, null);
-        Background background = new Background(backgroundFill);
-     
-        hxBody.getChildren().add(bxMenu);
         
-        bxMenu.setMinSize(200, 1000); 
+        Image img = new Image(getClass().getResourceAsStream("/images/logo.png"));
+        ImageView imgView = new ImageView(img);
+        imgView.setFitHeight(420);
+        imgView.setFitWidth(520);
+        HBox.setMargin(imgView, new Insets(70, 0, 0, 150));
+   
+        hxBody.getChildren().addAll(bxMenu, imgView);
+        
+        bxMenu.setMinSize(250, 1000); 
         bxMenu.setMaxSize(Double.MAX_VALUE, 2500); 
+       
         
         String btStyle = "-fx-min-width: 150px; " +
                 "-fx-min-height: 35px; " +
@@ -105,37 +114,47 @@ public class Inicio extends Application {
         VBox.setMargin(btEmpleado, insets);
         btEmpleado.setCursor(Cursor.HAND);
         
-        btAgregarProducto = createButton("Agregar Producto", btStyle, this::onAregarButtonClick);
-        VBox.setMargin(btAgregarProducto, insets);
-        btAgregarProducto.setCursor(Cursor.HAND);
-        
+               
         btCerrarSesion = createButton("Cerrar Sesion", btStyle, this::onCerrarSesionButtonClick);
+        btCerrarSesion.setCursor(Cursor.HAND);
+        VBox.setMargin(btCerrarSesion, new Insets(120, 0, 0, 0));
         
         menu = new Label("MENÚ");
         menu.setFont(new Font(20));
-        
+        VBox.setMargin(menu, new Insets(70, 0, 0, 0));
         bxMenu.getChildren().addAll(menu,
                 btVenta, 
                 btStock, 
                 btProveedor, 
                 btClientes, 
                 btResumen, 
-                btEmpleado);
+                btEmpleado,
+                btCerrarSesion);
         bxMenu.setAlignment(Pos.TOP_CENTER);
       
         
-        inicioRoot.getChildren().addAll(bxTitle, hxBody);
-        inicioRoot.setBackground(background);
-        scene = new Scene(inicioRoot,  1200, 600);
+        
+                    //color negro
+        BackgroundFill backgroundFillNegro = new BackgroundFill(Color.web("#36373b"), null, null);
+        Background bkNegro = new Background(backgroundFillNegro);
+        
+        //inicioRoot.setTop(bxTitle);
+        inicioRoot.setLeft(hxBody);
+
+        inicioRoot.setBackground(bkNegro);
+        scene = new Scene(inicioRoot, 1100, 600);
         
         primaryStage.setTitle("Talabarteria Luiggi");
         primaryStage.setScene(scene);
         primaryStage.show(); 
+        primaryStage.setResizable(true);
+        primaryStage.centerOnScreen();
     }
     
-    
+      
     public Inicio(Stage primaryStage, ConectionBD conn) throws Exception {
        connBD = conn;
+       primaryStage.centerOnScreen();
        start(primaryStage);
     }
 
@@ -164,21 +183,21 @@ public class Inicio extends Application {
         VerProveedores vr = new VerProveedores(connBD);
     }
     private void onResumenButtonClick(ActionEvent event) {   
-        System.out.println("Accion del boton resumen");
+        Resumen r = new Resumen(connBD);
     }
     private void onClientesButtonClick(ActionEvent event) {   
         VerClientes vc = new VerClientes(connBD);
     }
     private void onEmpleadoButtonClick(ActionEvent event) {   
-        System.out.println("Accion del boton empleado");
+        new AgregarEmpleado(connBD);
     }
-    
-    private void onAregarButtonClick(ActionEvent event){
-        System.out.println("Accion del boton agregar producto");
-    }
-    
+
     private void onCerrarSesionButtonClick(ActionEvent event) {   
-        System.out.println("Accion del boton cerrar sesion");
+        boolean ok = alerta.mostrarAlertaConfirmacion("¡Advertencia!", "¿Desea cerrar sesion?", "CONFIRMATION");
+        if(ok){
+            primaryStage.close();
+        }
+
     }
     
     
