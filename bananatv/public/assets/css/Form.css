@@ -1,0 +1,14 @@
+.inputs{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 10px;
+}
+
+.imgs .banner img{
+    width: 286px;
+    height: 425px;
+}
+.imgs .imagen img{
+    width: 1050px;
+    height: 469px;
+}

@@ -1,0 +1,25 @@
+.card{
+    width: 18rem;
+}
+
+.card-body{
+    text-align: center;
+}
+
+.cardContainer{
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;    
+}
+
+.title{
+    text-align: center;
+}
+
+.card-body .dangerZone{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    margin-top: 10px;
+}

@@ -1,0 +1,9 @@
+.landPage{
+    text-align: center;
+    font-size: larger;
+}
+
+.landPage img {
+    width: 200px;
+    height: 200px;
+}

@@ -1,0 +1,81 @@
+.movie {
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.movieData {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    width: 90%;
+    height: 100%;
+    border: 1px solid black;
+    border-radius: 15px;
+    background: rgb(255, 233, 113);
+    background: linear-gradient(90deg, rgba(255, 233, 113, 1) 25%, rgba(251, 213, 44, 1) 50%, rgba(255, 233, 113, 1) 75%);
+}
+
+.mainImgCont {
+    width: 100%;
+    height: 469px;
+    position: relative;
+}
+
+.mainImg {
+    width: 1050px;
+    height: 469px;
+}
+
+.movieMeta {
+    width: 60%;
+}
+
+.movieData hr {
+    background-color: black;
+}
+
+.title {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btnContainer button {
+    margin: 10px;
+    border: 1px solid black;
+}
+
+.play {
+    width: 330px;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+}
+.play button {
+    border: 1px solid black;
+    color: black;
+}
+
+.info {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: flex-end;
+}
+
+.info p {
+    font-weight: 800;
+}
+
+.info button {
+    margin: 10px;
+    border: 1px solid black;
+    color: black;
+}

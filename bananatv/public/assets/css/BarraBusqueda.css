@@ -1,0 +1,22 @@
+.idk{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.busquedaContenedor{
+    width: 95%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    background: rgb(255, 233, 113);
+    background: linear-gradient(90deg, rgba(255, 233, 113, 1) 25%, rgba(251, 213, 44, 1) 50%, rgba(255, 233, 113, 1) 75%);
+    border: 1px solid black;
+    border-radius: 25px;
+}
+.busquedaContenedor .busqueda{
+    width: 50%;
+    height: 100%;
+}

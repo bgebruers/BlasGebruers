@@ -1,0 +1,15 @@
+.admin{
+    text-align: center;
+}
+
+.botones{
+    width: 100%;
+    height: auto;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.botones button{
+    border: 1px solid black;
+}
