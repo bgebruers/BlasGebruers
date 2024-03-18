@@ -17,3 +17,6 @@
 
 
 -PorkyCakes: es un proyecto en el cual se desarrollaron algunas funcionalidades de lo que seria una tienda online. Fue desarrollado con Java, SparkJava y Velocity. 
+
+
+-bananatv: es un proyecto donde se creo una plataforma web con funcionalidades de una de streaming, simulando netflix, prime video, etc. Fue desarrollada con typescript, next y react, tambien utiliza la api mencionada anteriormente
